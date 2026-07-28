@@ -1,8 +1,9 @@
 import { useState, useEffect, useImperativeHandle } from "react";
-import { WeatherForecast_Current } from "../data/forecast";
+import { WeatherForecast_Current, WeatherForecast_7d } from "../data/forecast";
 import { WMO_Codes, WMO_Codes_FR } from "../data/WMO_Codes";
 import { WMOIcon } from "../data/WMO_Icons";
 import Forecast24hGraph from "./Forecast24hGraph";
+import Forecast7dGraph from "./Forecast7dGraph";
 
 /**
  * Mock data — same shape as the Open-Meteo hourly response
@@ -25,6 +26,7 @@ export default function MeteoForecast({ ref }) {
     const [city, setCity] = useState(null);
     const [forecastCurrent, setForecastCurrent] = useState(null);
     const [forecast24h] = useState(MOCK_FORECAST_24H); // TODO: fetch WeatherForecast_24h(city)
+    const [forecast7d, setForecast7d] = useState(null);
 
     useImperativeHandle(ref, () => ({ updateCity: setCity }));
 
@@ -37,6 +39,9 @@ export default function MeteoForecast({ ref }) {
         WeatherForecast_Current(city)
             .then((data) => { if (!cancelled) setForecastCurrent(data); })
             .catch((error) => console.error("Forecast fetch failed:", error));
+        WeatherForecast_7d(city)
+            .then((data) => { if (!cancelled) setForecast7d(data); })
+            .catch((error) => console.error("7-day forecast fetch failed:", error));
         return () => { cancelled = true; };
 
 
@@ -48,8 +53,9 @@ export default function MeteoForecast({ ref }) {
     }
 
     return (
-        <div className="flex flex-col">
-            <section className="p-4 bg-blue-500 text-white rounded-lg shadow-md">
+        <div className="flex flex-col px-36 py-4 gap-4">
+            {/** Current weather conditions **/}
+            <section className="p-4 bg-blue-500 text-white rounded-lg shadow-md w-96">
                 <h2 className="text-xl font-bold">Current Weather in {city.name}, {city.country}</h2>
                 {forecastCurrent ? (
                     <div className="mt-2 flex items-start gap-4">
@@ -58,25 +64,28 @@ export default function MeteoForecast({ ref }) {
                             title={WMO_Codes_FR[forecastCurrent.current.weather_code]}
                             className="text-7xl shrink-0" />
                         <div>
-                        <p>Temperature: {forecastCurrent.current.temperature_2m}°C</p>
-                        <p>Weather: ({WMO_Codes_FR[forecastCurrent.current.weather_code]})</p>
-                        <p>Pressure: {forecastCurrent.current.pressure_msl} hPa</p>
-                        <p>Visibility: {forecastCurrent.current.visibility} m</p>
-                        <p>UV Index: {forecastCurrent.current.uv_index}</p>
-                        <p>Precipitation: {forecastCurrent.current.precipitation} mm</p>
+                            <p>Temperature: {forecastCurrent.current.temperature_2m}°C</p>
+                            <p>Weather: {WMO_Codes_FR[forecastCurrent.current.weather_code]}</p>
+                            <p>Pressure: {forecastCurrent.current.pressure_msl} hPa</p>
+                            <p>Visibility: {forecastCurrent.current.visibility} m</p>
+                            <p>UV Index: {forecastCurrent.current.uv_index}</p>
+                            <p>Precipitation: {forecastCurrent.current.precipitation} mm</p>
                         </div>
                     </div>
                 ) : (
                     <p>Loading current weather...</p>
                 )}
             </section>
-            <section className="p-4 bg-white rounded-lg shadow-md mt-4">
-                {/** 24-hour Weather forecast data with a graph **/}
+
+            {/** 24-hour forecast graph **/}
+            <section className="p-4 bg-white rounded-lg shadow-md mt-4 w-fit">
                 <h3 className="text-lg font-bold text-gray-800 mb-2">24h Forecast</h3>
                 <Forecast24hGraph hourly={forecast24h} />
             </section>
-            <section className="p-4 bg-white rounded-lg shadow-md mt-4">
-                {/** 7-day Weather forecast data **/}
+            {/** 7-day forecast **/}
+            <section className="p-4 bg-white rounded-lg shadow-md mt-4 w-fit">
+                <h3 className="text-lg font-bold text-gray-800 mb-2">7-Day Forecast</h3>
+                <Forecast7dGraph daily={forecast7d?.daily} />
             </section>
         </div>
     );

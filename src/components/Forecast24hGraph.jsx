@@ -8,7 +8,7 @@ const CURVE_BOTTOM = 112;// y of coldest point
 const PRECIP_MAX_H = 70; // bar height at 100% precipitation probability
 
 /** Catmull-Rom → cubic Bézier smooth path through points. */
-function smoothPath(pts) {
+export function smoothPath(pts) {
     if (pts.length < 2) return "";
     let d = `M ${pts[0].x},${pts[0].y}`;
     for (let i = 0; i < pts.length - 1; i++) {
