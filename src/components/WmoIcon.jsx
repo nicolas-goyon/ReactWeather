@@ -19,7 +19,7 @@ import {
     WiDayHail, WiNightAltHail,
 } from "react-icons/wi";
 
-const WMO_Icons = {
+const WMO_ICONS = {
     0: { day: WiDaySunny, night: WiNightClear },                    // Clear sky
     1: { day: WiDaySunnyOvercast, night: WiNightAltPartlyCloudy },  // Mainly clear
     2: { day: WiDayCloudy, night: WiNightAltCloudy },               // Partly cloudy
@@ -50,17 +50,13 @@ const WMO_Icons = {
     99: { day: WiDayHail, night: WiNightAltHail },                  // Thunderstorm, heavy hail
 };
 
-/** Returns the icon component for a WMO code. `isDay` accepts 1/0 or true/false. */
-function getWMOIcon(code, isDay = true) {
-    const entry = WMO_Icons[code];
+function getWmoIcon(code, isDay = true) {
+    const entry = WMO_ICONS[code];
     if (!entry) return WiCloud; // fallback for unknown codes
     return isDay ? entry.day : entry.night;
 }
 
-/** Drop-in icon component: <WMOIcon code={95} isDay={0} className="text-4xl" /> */
-function WMOIcon({ code, isDay = true, ...props }) {
-    const Icon = getWMOIcon(code, isDay);
+export default function WmoIcon({ code, isDay = true, ...props }) {
+    const Icon = getWmoIcon(code, isDay);
     return <Icon {...props} />;
 }
-
-export { WMO_Icons, getWMOIcon, WMOIcon };

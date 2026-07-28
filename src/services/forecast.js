@@ -1,11 +1,11 @@
 // Open-Meteo Weather Forecast API
 // Documentation: https://open-meteo.com/en/docs
 
-const ForecastAPI = {
+const FORECAST_API = {
     baseUrl: "https://api.open-meteo.com/v1/forecast",
 
     // Parameters applied to every request (see "Settings" in the docs)
-    mainParameters: {
+    defaultParameters: {
         timezone: "auto",
         temperature_unit: "celsius",
         wind_speed_unit: "kmh",
@@ -13,7 +13,6 @@ const ForecastAPI = {
     },
 
     // Weather variables requested for each forecast type.
-    // Any hourly variable is also valid as a current condition.
     variables: {
         current: [
             "temperature_2m",
@@ -31,6 +30,7 @@ const ForecastAPI = {
             "temperature_2m",
             "weather_code",
             "precipitation_probability",
+            "is_day",
         ],
         daily: [
             "weather_code",
@@ -39,17 +39,15 @@ const ForecastAPI = {
             "precipitation_probability_max",
         ],
     },
-}
+};
 
-// Merge the city coordinates, the main parameters and the request-specific
-// parameters into a request URL. Array values are joined with commas.
-function BuildForecastUrl(city, parameters) {
-    const url = new URL(ForecastAPI.baseUrl);
+function buildForecastUrl(city, parameters) {
+    const url = new URL(FORECAST_API.baseUrl);
 
     const allParameters = {
         latitude: city.latitude,
         longitude: city.longitude,
-        ...ForecastAPI.mainParameters,
+        ...FORECAST_API.defaultParameters,
         ...parameters,
     };
 
@@ -60,36 +58,32 @@ function BuildForecastUrl(city, parameters) {
     return url;
 }
 
-async function FetchForecast(city, parameters) {
-    const response = await fetch(BuildForecastUrl(city, parameters));
+async function requestForecast(city, parameters) {
+    const response = await fetch(buildForecastUrl(city, parameters));
     if (!response.ok) {
         throw new Error(`Open-Meteo request failed (${response.status})`);
     }
     return await response.json();
 }
 
-// Current conditions: values in data.current, units in data.current_units
-async function WeatherForecast_Current(city) {
-    return await FetchForecast(city, {
-        current: ForecastAPI.variables.current,
+async function fetchCurrentWeather(city) {
+    return await requestForecast(city, {
+        current: FORECAST_API.variables.current,
     });
 }
 
-// Next 24 hours, hour by hour: values in data.hourly, units in data.hourly_units
-async function WeatherForecast_24h(city) {
-    return await FetchForecast(city, {
-        hourly: ForecastAPI.variables.hourly,
+async function fetchHourlyForecast(city) {
+    return await requestForecast(city, {
+        hourly: FORECAST_API.variables.hourly,
         forecast_hours: 24,
     });
 }
 
-// Next 7 days: values in data.daily, units in data.daily_units
-async function WeatherForecast_7d(city) {
-    return await FetchForecast(city, {
-        daily: ForecastAPI.variables.daily,
+async function fetchDailyForecast(city) {
+    return await requestForecast(city, {
+        daily: FORECAST_API.variables.daily,
         forecast_days: 7,
     });
 }
 
-
-export { WeatherForecast_Current, WeatherForecast_24h, WeatherForecast_7d };
+export { fetchCurrentWeather, fetchHourlyForecast, fetchDailyForecast };
