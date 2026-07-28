@@ -16,6 +16,7 @@ React 19 · Vite · Tailwind CSS 4 · react-icons
 
 ```bash
 cp .env.example .env   # renseigner VITE_OPENWEATHERMAP_API_KEY
-npm install
-npm run dev
+docker compose up --build -d
+
+# localhost:8080
 ```
